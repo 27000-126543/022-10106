@@ -1,0 +1,48 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /triage
+
+spring:
+  application:
+    name: triage-service
+  datasource:
+    url: jdbc:h2:mem:triage;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+
+triage:
+  risk:
+    high-risk-keywords: 瘢痕体质,疤痕体质,过敏体质,严重心脏病,高血压,糖尿病,孕妇,哺乳期,精神疾病
+    auto-upgrade-to-doctor-keywords: 瘢痕体质,疤痕体质,严重心脏病,精神疾病
+  message:
+    wait-reminder-minutes: 30
+    mock-enabled: true
+
+logging:
+  level:
+    com.medical.triage: DEBUG
+    org.springframework.web: INFO
