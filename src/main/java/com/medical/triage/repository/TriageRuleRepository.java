@@ -3,6 +3,7 @@ package com.medical.triage.repository;
 import com.medical.triage.entity.TriageRule;
 import com.medical.triage.enums.ConsultationType;
 import com.medical.triage.enums.DepartmentType;
+import com.medical.triage.enums.RuleStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,4 +45,16 @@ public interface TriageRuleRepository extends JpaRepository<TriageRule, Long> {
     long countByStoreIdAndIsEnabledTrue(Long storeId);
 
     boolean existsByStoreIdAndNameAndIsEnabledTrue(Long storeId, String name);
+
+    List<TriageRule> findByStoreIdAndStatusAndIsEnabledTrue(Long storeId, RuleStatus status);
+
+    List<TriageRule> findByStoreIdAndIsOfficialTrueAndIsEnabledTrue(Long storeId);
+
+    Optional<TriageRule> findByStoreIdAndRuleCodeAndIsOfficialTrue(Long storeId, String ruleCode);
+
+    List<TriageRule> findByStoreIdAndStatusInAndIsEnabledTrue(Long storeId, List<RuleStatus> statuses);
+
+    List<TriageRule> findByStoreIdAndStatus(Long storeId, RuleStatus status);
+
+    List<TriageRule> findByRuleCodeOrderByVersionDesc(String ruleCode);
 }

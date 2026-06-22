@@ -16,27 +16,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "message_log")
-public class MessageLog {
+@Table(name = "message_queue")
+public class MessageQueue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long messageLogId;
+
     private Long appointmentId;
 
     private Long customerId;
-
-    private Long queueId;
 
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
 
     @Enumerated(EnumType.STRING)
     private MessageChannel channel;
-
-    @Enumerated(EnumType.STRING)
-    private MessageQueueStatus sendStatus;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -45,25 +42,27 @@ public class MessageLog {
 
     private String targetOpenid;
 
-    private LocalDateTime sentTime;
-
-    private Boolean isSuccess;
-
-    @Column(columnDefinition = "TEXT")
-    private String failReason;
+    @Enumerated(EnumType.STRING)
+    private MessageQueueStatus status;
 
     private Integer retryCount;
 
     private Integer maxRetryCount;
 
-    private LocalDateTime lastRetryTime;
-
     private LocalDateTime nextRetryTime;
 
-    private String lastError;
+    private LocalDateTime lastRetryTime;
 
     @Column(columnDefinition = "TEXT")
-    private String errorStacktrace;
+    private String lastFailReason;
+
+    private Integer priority;
+
+    private LocalDateTime scheduledTime;
+
+    private LocalDateTime sentTime;
+
+    private String createdBy;
 
     private LocalDateTime createdAt;
 
@@ -79,8 +78,8 @@ public class MessageLog {
         if (maxRetryCount == null) {
             maxRetryCount = 3;
         }
-        if (sendStatus == null) {
-            sendStatus = MessageQueueStatus.PENDING;
+        if (priority == null) {
+            priority = 0;
         }
     }
 

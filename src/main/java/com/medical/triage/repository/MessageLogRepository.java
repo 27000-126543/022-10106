@@ -2,7 +2,10 @@ package com.medical.triage.repository;
 
 import com.medical.triage.entity.MessageLog;
 import com.medical.triage.enums.MessageChannel;
+import com.medical.triage.enums.MessageQueueStatus;
 import com.medical.triage.enums.MessageType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -38,4 +41,8 @@ public interface MessageLogRepository extends JpaRepository<MessageLog, Long> {
     void deleteByAppointmentId(Long appointmentId);
 
     void deleteByCreatedAtBefore(LocalDateTime cutoffTime);
+
+    Page<MessageLog> findByStoreIdAndSendStatus(Long storeId, MessageQueueStatus status, Pageable pageable);
+
+    List<MessageLog> findBySendStatusIn(List<MessageQueueStatus> statuses);
 }

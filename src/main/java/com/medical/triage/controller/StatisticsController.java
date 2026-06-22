@@ -2,7 +2,9 @@ package com.medical.triage.controller;
 
 import com.medical.triage.dto.response.ApiResponse;
 import com.medical.triage.dto.response.StatisticsResponse;
+import com.medical.triage.dto.response.TrendStatisticsResponse;
 import com.medical.triage.service.StatisticsService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +33,15 @@ public class StatisticsController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         List<StatisticsResponse> statistics = statisticsService.getAllStoresStatistics(startDate, endDate);
+        return ApiResponse.success(statistics);
+    }
+
+    @GetMapping("/trend/{storeId}")
+    public ApiResponse<TrendStatisticsResponse> getTrendStatistics(
+            @PathVariable @NotNull(message = "门店ID不能为空") Long storeId,
+            @RequestParam @NotNull(message = "开始日期不能为空") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @NotNull(message = "结束日期不能为空") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        TrendStatisticsResponse statistics = statisticsService.getTrendStatistics(storeId, startDate, endDate);
         return ApiResponse.success(statistics);
     }
 }

@@ -38,4 +38,10 @@ public class TriageResultResponse {
     private Boolean isReassigned;
 
     private String reassignedReason;
+
+    private Long explanationId;
+
+    private Boolean isGrayRuleUsed;
+
+    private Long usedRuleVersion;
 }

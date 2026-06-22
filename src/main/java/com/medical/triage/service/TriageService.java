@@ -1,11 +1,13 @@
 package com.medical.triage.service;
 
+import com.medical.triage.dto.response.TriageExplanationResponse;
 import com.medical.triage.dto.response.TriageResultResponse;
 import com.medical.triage.entity.Appointment;
 import com.medical.triage.entity.ConsultantGroup;
 import com.medical.triage.entity.Customer;
 import com.medical.triage.entity.Department;
 import com.medical.triage.entity.Store;
+import com.medical.triage.entity.TriageExplanation;
 import com.medical.triage.entity.TriageResult;
 import com.medical.triage.enums.AppointmentStatus;
 import com.medical.triage.enums.RiskLevel;
@@ -17,6 +19,7 @@ import com.medical.triage.repository.ConsultantGroupRepository;
 import com.medical.triage.repository.CustomerRepository;
 import com.medical.triage.repository.DepartmentRepository;
 import com.medical.triage.repository.StoreRepository;
+import com.medical.triage.repository.TriageExplanationRepository;
 import com.medical.triage.repository.TriageResultRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,7 @@ public class TriageService {
 
     private final TriageEngine triageEngine;
     private final TriageResultRepository triageResultRepository;
+    private final TriageExplanationRepository triageExplanationRepository;
     private final GuideTaskService guideTaskService;
     private final StatusFlowService statusFlowService;
     private final AppointmentRepository appointmentRepository;
@@ -58,6 +62,15 @@ public class TriageService {
         }
 
         TriageResult triageResult = triageEngine.executeTriage(appointmentId);
+
+        TriageExplanation explanation = triageExplanationRepository.findByAppointmentId(appointmentId)
+                .orElse(null);
+        if (explanation != null) {
+            explanation.setTriageResultId(triageResult.getId());
+            triageExplanationRepository.save(explanation);
+            triageResult.setExplanationId(explanation.getId());
+        }
+
         triageResult = triageResultRepository.save(triageResult);
 
         boolean needDoctor = triageResult.getRiskLevel() == RiskLevel.HIGH
@@ -119,6 +132,57 @@ public class TriageService {
         return buildTriageResultResponse(triageResult, needDoctor);
     }
 
+    @Transactional(readOnly = true)
+    public TriageExplanationResponse getTriageExplanation(Long appointmentId) {
+        log.info("获取分诊解释, appointmentId: {}", appointmentId);
+
+        TriageResult triageResult = triageResultRepository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("该预约没有分诊结果: " + appointmentId));
+
+        if (triageResult.getExplanationId() == null) {
+            throw new IllegalArgumentException("该分诊结果没有关联解释: " + appointmentId);
+        }
+
+        TriageExplanation explanation = triageExplanationRepository.findById(triageResult.getExplanationId())
+                .orElseThrow(() -> new IllegalArgumentException("分诊解释不存在: " + triageResult.getExplanationId()));
+
+        return buildTriageExplanationResponse(explanation);
+    }
+
+    @Transactional(readOnly = true)
+    public TriageExplanationResponse getTriageExplanationById(Long id) {
+        log.info("获取分诊解释详情, id: {}", id);
+
+        TriageExplanation explanation = triageExplanationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("分诊解释不存在: " + id));
+
+        return buildTriageExplanationResponse(explanation);
+    }
+
+    private TriageExplanationResponse buildTriageExplanationResponse(TriageExplanation explanation) {
+        return TriageExplanationResponse.builder()
+                .id(explanation.getId())
+                .triageResultId(explanation.getTriageResultId())
+                .appointmentId(explanation.getAppointmentId())
+                .matchedAppointmentKeywords(explanation.getMatchedAppointmentKeywords())
+                .matchedQuestionAnswers(explanation.getMatchedQuestionAnswers())
+                .matchedRiskKeywords(explanation.getMatchedRiskKeywords())
+                .matchedRules(explanation.getMatchedRules())
+                .departmentScores(explanation.getDepartmentScores())
+                .groupScores(explanation.getGroupScores())
+                .finalDepartmentId(explanation.getFinalDepartmentId())
+                .finalDepartmentName(explanation.getFinalDepartmentName())
+                .finalGroupId(explanation.getFinalGroupId())
+                .finalGroupName(explanation.getFinalGroupName())
+                .finalConsultationType(explanation.getFinalConsultationType())
+                .finalRiskLevel(explanation.getFinalRiskLevel())
+                .needDoctorAssessment(explanation.getNeedDoctorAssessment())
+                .overallScore(explanation.getOverallScore())
+                .explanationText(explanation.getExplanationText())
+                .createdAt(explanation.getCreatedAt())
+                .build();
+    }
+
     private TriageResultResponse buildTriageResultResponse(TriageResult triageResult, boolean needDoctor) {
         Customer customer = customerRepository.findById(triageResult.getCustomerId()).orElse(null);
         Store store = storeRepository.findById(triageResult.getStoreId()).orElse(null);
@@ -138,6 +202,9 @@ public class TriageService {
                 .triageTime(triageResult.getTriageTime())
                 .isReassigned(triageResult.getIsReassigned())
                 .reassignedReason(triageResult.getReassignedReason())
+                .explanationId(triageResult.getExplanationId())
+                .isGrayRuleUsed(triageResult.getIsGrayRuleUsed())
+                .usedRuleVersion(triageResult.getUsedRuleVersion())
                 .build();
     }
 }

@@ -33,6 +33,8 @@ public class TriageResult {
 
     private Long consultantGroupId;
 
+    private Long explanationId;
+
     @Enumerated(EnumType.STRING)
     private ConsultationType consultationType;
 
@@ -50,6 +52,10 @@ public class TriageResult {
 
     @Enumerated(EnumType.STRING)
     private TriageStatus status;
+
+    private Long usedRuleVersion;
+
+    private Boolean isGrayRuleUsed;
 
     private LocalDateTime createdAt;
 
